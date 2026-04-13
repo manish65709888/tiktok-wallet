@@ -347,6 +347,30 @@
       box.classList.remove('hidden');
     }
 
+    async function searchTikTok(query) {
+      if (!query.trim()) {
+        document.getElementById('search-state-box').innerHTML = `<div class="st-icon">🔍</div><div>Type a TikTok username to search</div>`;
+        document.getElementById('search-state-box').classList.remove('hidden');
+        document.getElementById('search-results-box').classList.add('hidden');
+        document.getElementById('recent-section').classList.remove('hidden');
+        return;
+      }
+      showState('spinner', 'Searching TikTok...');
+      try {
+        const clean = query.replace(/^@/, '');
+        const res = await fetch(`http://localhost:5000/tiktok/search?q=${encodeURIComponent(clean)}`);
+        if (!res.ok) throw new Error('server error');
+        const data = await res.json();
+        if (data.users && data.users.length) {
+          showResults(data.users.map(u => ({ ...u, initials: (u.nickname || u.uniqueId || '?')[0].toUpperCase() })));
+        } else {
+          showState('😕', `No TikTok user found for "${clean}"`);
+        }
+      } catch (e) {
+        showState('⚠️', 'Cannot reach proxy server.<br/>Run <b style="color:#25f4ee">python3 server.py</b> in /Users/Shared then refresh.');
+      }
+    }
+
     function onSearchInput(val) {
       clearTimeout(searchTimer);
       if (!val.trim()) {
