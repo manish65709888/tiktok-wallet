@@ -338,25 +338,32 @@
       const filtered = unique.filter(u =>
         u.name.toLowerCase().includes(q) || u.handle.toLowerCase().includes(q)
       );
-      if (filtered.length) {
-        document.getElementById('search-state-box').classList.add('hidden');
-        document.getElementById('recent-section').classList.add('hidden');
-        const box = document.getElementById('search-results-box');
-        box.innerHTML = filtered.map(u => {
-          const avatarHtml = u.avatarUrl
-            ? `<img src="${u.avatarUrl}" class="tt-avatar" onerror="this.outerHTML='<div class=tt-avatar-placeholder>${u.name[0]}</div>'" />`
-            : `<div class="tt-avatar-placeholder">${u.name[0]}</div>`;
-          return `
-            <div class="search-result-item" onclick="pickUserSimple('${u.handle}', '${u.name.replace(/'/g,"&#39;")}', '${u.avatar||u.name[0]}', '${u.color||'#fe2c55'}')">
-              ${avatarHtml}
-              <div class="tt-info"><h4>${u.name}</h4><p>${u.handle}</p></div>
-              <div class="tt-arrow">›</div>
-            </div>`;
-        }).join('');
-        box.classList.remove('hidden');
-      } else {
-        showState('😕', `No user found for "${query}"`);
-      }
+      document.getElementById('search-state-box').classList.add('hidden');
+      document.getElementById('recent-section').classList.add('hidden');
+      const box = document.getElementById('search-results-box');
+      // Always show a "Send to @query" option at top
+      const handle = query.startsWith('@') ? query : '@' + query;
+      const addNew = `
+        <div class="search-result-item" onclick="pickUserSimple('${handle}', '${query.replace(/^@/,'')}', '👤', '#fe2c55')" style="border:1.5px dashed #fe2c5555;border-radius:12px;margin-bottom:4px">
+          <div class="tt-avatar-placeholder" style="background:#fe2c5522;color:#fe2c55;font-size:22px">👤</div>
+          <div class="tt-info">
+            <h4 style="color:#fe2c55">Send to ${handle}</h4>
+            <p>Tap to send reward</p>
+          </div>
+          <div class="tt-arrow">›</div>
+        </div>`;
+      box.innerHTML = addNew + filtered.map(u => {
+        const avatarHtml = u.avatarUrl
+          ? `<img src="${u.avatarUrl}" class="tt-avatar" onerror="this.outerHTML='<div class=tt-avatar-placeholder>${u.name[0]}</div>'" />`
+          : `<div class="tt-avatar-placeholder">${u.name[0]}</div>`;
+        return `
+          <div class="search-result-item" onclick="pickUserSimple('${u.handle}', '${u.name.replace(/'/g,"&#39;")}', '${u.avatar||u.name[0]}', '${u.color||'#fe2c55'}')">
+            ${avatarHtml}
+            <div class="tt-info"><h4>${u.name}</h4><p>${u.handle}</p></div>
+            <div class="tt-arrow">›</div>
+          </div>`;
+      }).join('');
+      box.classList.remove('hidden');
     }
 
     function onSearchInput(val) {
