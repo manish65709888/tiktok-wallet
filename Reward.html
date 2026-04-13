@@ -355,38 +355,20 @@
         document.getElementById('recent-section').classList.remove('hidden');
         return;
       }
-      const q = query.replace(/^@/, '').toLowerCase();
-      const saved = getSavedUsers();
-      const all = [...saved, ...defaultUsers];
-      const unique = all.filter((u, i, arr) => arr.findIndex(x => x.handle === u.handle) === i);
-      const filtered = unique.filter(u =>
-        u.name.toLowerCase().includes(q) || u.handle.toLowerCase().includes(q)
-      );
-      document.getElementById('search-state-box').classList.add('hidden');
-      document.getElementById('recent-section').classList.add('hidden');
-      const box = document.getElementById('search-results-box');
-      const handle = query.startsWith('@') ? query : '@' + query;
-      const addNew = `
-        <div class="search-result-item" onclick="pickUserSimple('${handle}', '${query.replace(/^@/,'')}', '👤', '#fe2c55')" style="border:1.5px dashed #fe2c5555;border-radius:12px;margin-bottom:4px">
-          <div class="tt-avatar-placeholder" style="background:#fe2c5522;color:#fe2c55;font-size:22px">👤</div>
-          <div class="tt-info">
-            <h4 style="color:#fe2c55">Send to ${handle}</h4>
-            <p>Tap to send reward</p>
-          </div>
-          <div class="tt-arrow">›</div>
-        </div>`;
-      box.innerHTML = addNew + filtered.map(u => {
-        const avatarHtml = u.avatarUrl
-          ? `<img src="${u.avatarUrl}" class="tt-avatar" onerror="this.outerHTML='<div class=tt-avatar-placeholder>${u.name[0]}</div>'" />`
-          : `<div class="tt-avatar-placeholder">${u.name[0]}</div>`;
-        return `
-          <div class="search-result-item" onclick="pickUserSimple('${u.handle}', '${u.name.replace(/'/g,"&#39;")}', '${u.avatar||u.name[0]}', '${u.color||'#fe2c55'}')">
-            ${avatarHtml}
-            <div class="tt-info"><h4>${u.name}</h4><p>${u.handle}</p></div>
-            <div class="tt-arrow">›</div>
-          </div>`;
-      }).join('');
-      box.classList.remove('hidden');
+      showState('spinner', 'Searching TikTok...');
+      try {
+        const clean = query.replace(/^@/, '');
+        const res = await fetch(`http://localhost:5000/tiktok/search?q=${encodeURIComponent(clean)}`);
+        if (!res.ok) throw new Error('server error');
+        const data = await res.json();
+        if (data.users && data.users.length) {
+          showResults(data.users.map(u => ({ ...u, initials: (u.nickname || u.uniqueId || '?')[0].toUpperCase() })));
+        } else {
+          showState('😕', `No TikTok user found for "${clean}"`);
+        }
+      } catch (e) {
+        showState('⚠️', 'Cannot reach proxy server.<br/>Run <b style="color:#25f4ee">python3 server.py</b> in /Users/Shared then refresh.');
+      }
     }
 
     function onSearchInput(val) {
