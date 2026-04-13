@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: tiktok-wallet
+    env: static
+    buildCommand: echo "no build needed"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /
+        destination: /login.html
