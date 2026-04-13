@@ -1,241 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <!-- Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://viyeyixvxvqwzwnmsfdl.supabase.co https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="DENY">
-  <title>TikTok Wallet — Login</title>
+  <title>TikTok Wallet</title>
   <script src="theme.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg,#121212); color: var(--text,#fff); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 420px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 32px 24px; }
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Inter', -apple-system, sans-serif;
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: -100px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(254,44,85,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -150px; right: -100px;
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(37,244,238,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
 
-    .logo { text-align: center; margin-bottom: 36px; }
-    .logo .icon { font-size: 56px; margin-bottom: 12px; }
-    .logo h1 { font-size: 24px; font-weight: 700; }
-    .logo p { font-size: 14px; color: #888; margin-top: 6px; }
+    .logo {
+      text-align: center;
+      margin-bottom: 44px;
+    }
+    .logo-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #fe2c55, #ff6b9d);
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 18px;
+      box-shadow: 0 8px 32px rgba(254,44,85,0.35);
+    }
+    .logo h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo p { font-size: 14px; color: #666; margin-top: 6px; font-weight: 400; }
+
+    .card {
+      background: #141414;
+      border: 1px solid #222;
+      border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
 
     .form-group { margin-bottom: 16px; }
-    .form-group label { font-size: 13px; color: #888; display: block; margin-bottom: 8px; }
-    .form-group input {
-      width: 100%; background: #1e1e1e; border: 1.5px solid #2a2a2a;
-      border-radius: 14px; padding: 14px 16px; color: #fff;
-      font-size: 15px; outline: none; transition: border-color 0.2s;
-      -webkit-user-select: text;
+    .form-group label {
+      font-size: 12px; font-weight: 600; color: #888;
+      display: block; margin-bottom: 8px;
+      text-transform: uppercase; letter-spacing: 0.6px;
     }
-    .form-group input:focus { border-color: #fe2c55; }
-    .form-group input::placeholder { color: #444; }
-
-    .pw-wrap { position: relative; }
-    .pw-wrap input { padding-right: 48px; }
-    .pw-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; color: #555; user-select: none; }
+    .input-wrap { position: relative; }
+    .input-wrap input {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1.5px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: #fff;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-wrap input:focus {
+      border-color: #fe2c55;
+      box-shadow: 0 0 0 3px rgba(254,44,85,0.1);
+    }
+    .input-wrap input::placeholder { color: #3a3a3a; }
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer; font-size: 16px; color: #555;
+      user-select: none;
+    }
 
     .login-btn {
-      width: 100%; background: #fe2c55; color: #fff; border: none;
-      border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700;
-      cursor: pointer; margin-top: 8px; transition: opacity 0.2s, transform 0.15s;
+      width: 100%;
+      background: linear-gradient(135deg, #fe2c55, #ff6b35);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(254,44,85,0.35);
+      letter-spacing: 0.3px;
     }
-    .login-btn:active { opacity: 0.85; transform: scale(0.98); }
-    .login-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+    .login-btn:hover { box-shadow: 0 6px 28px rgba(254,44,85,0.5); }
+    .login-btn:active { opacity: 0.9; transform: scale(0.98); }
+    .login-btn:disabled { background: #222; color: #444; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .attempts-bar { margin-top: 12px; height: 2px; background: #222; border-radius: 2px; overflow: hidden; }
+    .attempts-fill { height: 100%; background: linear-gradient(90deg, #fe2c55, #ff6b35); transition: width 0.3s; }
 
     .msg {
-      border-radius: 10px; padding: 12px 14px; font-size: 13px;
-      margin-top: 14px; display: none;
+      border-radius: 10px; padding: 11px 14px; font-size: 13px;
+      margin-top: 12px; display: none; font-weight: 500;
     }
-    .msg.error { background: rgba(254,44,85,0.1); border: 1px solid rgba(254,44,85,0.3); color: #fe2c55; }
-    .msg.warn  { background: rgba(255,200,0,0.1);  border: 1px solid rgba(255,200,0,0.3);  color: #ffc800; }
+    .msg.error { background: rgba(254,44,85,0.08); border: 1px solid rgba(254,44,85,0.2); color: #ff6b9d; }
+    .msg.warn  { background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.2); color: #ffc800; }
     .msg.show  { display: block; }
 
-    .attempts-bar { margin-top: 10px; height: 3px; background: #2a2a2a; border-radius: 2px; overflow: hidden; }
-    .attempts-fill { height: 100%; background: #fe2c55; transition: width 0.3s; border-radius: 2px; }
-
     .spinner {
-      width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff; border-radius: 50%;
-      animation: spin 0.7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 8px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-text { text-align: center; margin-top: 24px; font-size: 12px; color: #444; }
   </style>
 </head>
 <body>
-
   <div class="logo">
-    <div class="icon">🎵</div>
+    <div class="logo-icon">🎵</div>
     <h1>TikTok Wallet</h1>
-    <p>Sign in to your account</p>
+    <p>Sign in to manage your balance</p>
   </div>
 
-  <div class="form-group">
-    <label>Email</label>
-    <input type="email" id="email" placeholder="Enter your email" autocomplete="email" maxlength="254" />
-  </div>
-  <div class="form-group">
-    <label>Password</label>
-    <div class="pw-wrap">
-      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" maxlength="128" onkeydown="if(event.key==='Enter') login()" />
-      <span class="pw-toggle" onclick="togglePw()">👁</span>
+  <div class="card">
+    <div class="form-group">
+      <label>Email Address</label>
+      <div class="input-wrap">
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" maxlength="254"/>
+      </div>
     </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="input-wrap">
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" maxlength="128" onkeydown="if(event.key==='Enter') login()"/>
+        <span class="pw-toggle" onclick="togglePw()">👁</span>
+      </div>
+    </div>
+    <button class="login-btn" id="login-btn" onclick="login()">Sign In</button>
+    <div class="attempts-bar"><div class="attempts-fill" id="attempts-fill" style="width:0%"></div></div>
+    <div class="msg error" id="error-msg"></div>
+    <div class="msg warn"  id="warn-msg"></div>
   </div>
 
-  <button class="login-btn" id="login-btn" onclick="login()">Sign In</button>
-  <div class="attempts-bar"><div class="attempts-fill" id="attempts-fill" style="width:0%"></div></div>
-  <div class="msg error" id="error-msg"></div>
-  <div class="msg warn"  id="warn-msg"></div>
+  <div class="footer-text">Protected by Supabase Auth · Single device only</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const { createClient } = supabase;
-    const sb = createClient(
-      'https://viyeyixvxvqwzwnmsfdl.supabase.co',
-      'sb_publishable_NWlQdFBD-JcgNl8EuN-Qqw_jx0mBh7-'
-    );
+    const sb = createClient('https://viyeyixvxvqwzwnmsfdl.supabase.co','sb_publishable_NWlQdFBD-JcgNl8EuN-Qqw_jx0mBh7-');
+    const MAX_ATTEMPTS = 5, LOCKOUT_MS = 5*60*1000, LOCK_KEY = 'tt_lockout', ATTEMPT_KEY = 'tt_attempts';
 
-    const MAX_ATTEMPTS = 5;
-    const LOCKOUT_MS   = 5 * 60 * 1000; // 5 minutes
-    const LOCK_KEY     = 'tt_lockout';
-    const ATTEMPT_KEY  = 'tt_attempts';
+    sb.auth.getSession().then(({ data }) => { if (data.session) window.location.replace('tiktok-balance.html'); });
 
-    // If already logged in, go to wallet
-    sb.auth.getSession().then(({ data }) => {
-      if (data.session) window.location.replace('tiktok-balance.html');
-    });
-
-    // Show reason message if redirected from another device
     const reason = new URLSearchParams(window.location.search).get('reason');
-    if (reason === 'another_device') {
-      showError('⚠️ You were logged out because your account was signed in on another device.');
-    } else if (reason === 'session_expired') {
-      showError('⏰ Your session expired. Please sign in again.');
-    }
+    if (reason === 'another_device') showError('⚠️ Logged out — account signed in on another device.');
+    else if (reason === 'session_expired') showError('⏰ Session expired. Please sign in again.');
 
-    function sanitize(str) {
-      return str.replace(/[<>"'`]/g, '').trim();
-    }
+    function sanitize(s) { return s.replace(/[<>"'`]/g,'').trim(); }
+    function getAttempts() { return parseInt(sessionStorage.getItem(ATTEMPT_KEY)||'0'); }
+    function setAttempts(n) { sessionStorage.setItem(ATTEMPT_KEY,n); document.getElementById('attempts-fill').style.width=(n/MAX_ATTEMPTS*100)+'%'; }
+    function isLockedOut() { return Date.now() < parseInt(sessionStorage.getItem(LOCK_KEY)||'0'); }
+    function getLockRemaining() { return Math.ceil((parseInt(sessionStorage.getItem(LOCK_KEY)||'0')-Date.now())/1000); }
+    function showError(msg) { const e=document.getElementById('error-msg'); e.textContent=msg; e.classList.add('show'); }
+    function showWarn(msg)  { const e=document.getElementById('warn-msg');  e.textContent=msg; e.classList.add('show'); }
+    function clearMsgs()   { document.getElementById('error-msg').classList.remove('show'); document.getElementById('warn-msg').classList.remove('show'); }
+    function togglePw()    { const i=document.getElementById('password'); i.type=i.type==='password'?'text':'password'; }
 
-    function getAttempts() { return parseInt(sessionStorage.getItem(ATTEMPT_KEY) || '0'); }
-    function setAttempts(n) {
-      sessionStorage.setItem(ATTEMPT_KEY, n);
-      document.getElementById('attempts-fill').style.width = (n / MAX_ATTEMPTS * 100) + '%';
-    }
-
-    function isLockedOut() {
-      const lockUntil = parseInt(sessionStorage.getItem(LOCK_KEY) || '0');
-      return Date.now() < lockUntil;
-    }
-
-    function getLockRemaining() {
-      const lockUntil = parseInt(sessionStorage.getItem(LOCK_KEY) || '0');
-      return Math.ceil((lockUntil - Date.now()) / 1000);
-    }
-
-    function showError(msg) {
-      const el = document.getElementById('error-msg');
-      el.textContent = msg;
-      el.classList.add('show');
-    }
-
-    function showWarn(msg) {
-      const el = document.getElementById('warn-msg');
-      el.textContent = msg;
-      el.classList.add('show');
-    }
-
-    function clearMsgs() {
-      document.getElementById('error-msg').classList.remove('show');
-      document.getElementById('warn-msg').classList.remove('show');
-    }
-
-    function togglePw() {
-      const inp = document.getElementById('password');
-      inp.type = inp.type === 'password' ? 'text' : 'password';
-    }
-
-    // Check lockout on page load
     if (isLockedOut()) {
       document.getElementById('login-btn').disabled = true;
-      showError(`Too many failed attempts. Try again in ${getLockRemaining()}s.`);
-      const interval = setInterval(() => {
-        if (!isLockedOut()) {
-          clearInterval(interval);
-          document.getElementById('login-btn').disabled = false;
-          clearMsgs();
-          setAttempts(0);
-        } else {
-          showError(`Too many failed attempts. Try again in ${getLockRemaining()}s.`);
-        }
+      showError(`Too many attempts. Try again in ${getLockRemaining()}s.`);
+      const iv = setInterval(() => {
+        if (!isLockedOut()) { clearInterval(iv); document.getElementById('login-btn').disabled=false; clearMsgs(); setAttempts(0); }
+        else showError(`Too many attempts. Try again in ${getLockRemaining()}s.`);
       }, 1000);
     }
 
     async function login() {
       clearMsgs();
-
-      if (isLockedOut()) {
-        showError(`Account locked. Try again in ${getLockRemaining()}s.`);
-        return;
-      }
-
-      const email    = sanitize(document.getElementById('email').value);
-      const password = document.getElementById('password').value; // don't sanitize password
-      const btn      = document.getElementById('login-btn');
-
-      if (!email || !password) {
-        showError('Please enter email and password.');
-        return;
-      }
-
-      // Basic email format check
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showError('Please enter a valid email address.');
-        return;
-      }
-
+      if (isLockedOut()) { showError(`Locked. Try again in ${getLockRemaining()}s.`); return; }
+      const email = sanitize(document.getElementById('email').value);
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('login-btn');
+      if (!email || !password) { showError('Please enter email and password.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Invalid email address.'); return; }
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span>Signing in...';
-
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
       if (error) {
-        const attempts = getAttempts() + 1;
-        setAttempts(attempts);
-
-        if (attempts >= MAX_ATTEMPTS) {
-          sessionStorage.setItem(LOCK_KEY, Date.now() + LOCKOUT_MS);
-          showError(`Too many failed attempts. Locked for 5 minutes.`);
-          btn.disabled = true;
-          btn.textContent = 'Sign In';
-          return;
-        }
-
-        const remaining = MAX_ATTEMPTS - attempts;
-        showError(`Invalid email or password.`);
-        if (remaining <= 2) showWarn(`⚠️ ${remaining} attempt${remaining > 1 ? 's' : ''} remaining before lockout.`);
-
-        btn.disabled = false;
-        btn.textContent = 'Sign In';
-        // Clear password field on failed attempt
-        document.getElementById('password').value = '';
+        const a = getAttempts()+1; setAttempts(a);
+        if (a >= MAX_ATTEMPTS) { sessionStorage.setItem(LOCK_KEY, Date.now()+LOCKOUT_MS); showError('Too many attempts. Locked for 5 minutes.'); btn.textContent='Sign In'; return; }
+        const r = MAX_ATTEMPTS-a;
+        showError('Invalid email or password.');
+        if (r <= 2) showWarn(`⚠️ ${r} attempt${r>1?'s':''} remaining.`);
+        btn.disabled=false; btn.textContent='Sign In';
+        document.getElementById('password').value='';
         return;
       }
-
-      // Success — register this device in user_metadata
-      sessionStorage.removeItem(ATTEMPT_KEY);
-      sessionStorage.removeItem(LOCK_KEY);
-
-      // Generate or retrieve stable device ID
+      sessionStorage.removeItem(ATTEMPT_KEY); sessionStorage.removeItem(LOCK_KEY);
       let deviceId = localStorage.getItem('tt_device_id');
-      if (!deviceId) {
-        deviceId = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-        localStorage.setItem('tt_device_id', deviceId);
-      }
-
-      // Write device ID to user_metadata — overwrites any previous device
-      await sb.auth.updateUser({
-        data: { active_device_id: deviceId }
-      });
-
+      if (!deviceId) { deviceId='dev_'+Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem('tt_device_id',deviceId); }
+      await sb.auth.updateUser({ data: { active_device_id: deviceId } });
       window.location.replace('tiktok-balance.html');
     }
   </script>
