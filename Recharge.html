@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recharge</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg,#121212); color: var(--text,#fff); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 420px; margin: 0 auto; min-height: 100vh; }
+
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; position: sticky; top: 0; background: var(--bg,#121212); z-index: 10; }
+    .header .back { font-size: 22px; cursor: pointer; }
+    .header h1 { font-size: 17px; font-weight: 600; }
+    .header .placeholder { width: 22px; }
+
+    .coin-balance {
+      margin: 16px 20px;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: 18px;
+      padding: 22px 20px;
+      display: flex; align-items: center; gap: 16px;
+      position: relative; overflow: hidden;
+    }
+    .coin-balance::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(254,44,85,0.15); border-radius: 50%; }
+    .coin-balance .big-icon { font-size: 40px; }
+    .coin-balance h2 { font-size: 28px; font-weight: 700; }
+    .coin-balance p { font-size: 13px; color: #888; margin-top: 4px; }
+
+    .section-label { padding: 20px 20px 12px; font-size: 15px; font-weight: 600; color: #eee; }
+
+    .pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px; }
+    .pack-item {
+      background: #1e1e1e;
+      border-radius: 16px;
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid #2a2a2a;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .pack-item.selected { border-color: #fe2c55; background: rgba(254,44,85,0.08); }
+    .pack-item.popular::after { content: 'POPULAR'; position: absolute; top: -1px; right: 10px; background: #fe2c55; color: #fff; font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 0 0 6px 6px; }
+    .pack-item .pack-icon { font-size: 28px; margin-bottom: 8px; }
+    .pack-item .pack-coins { font-size: 18px; font-weight: 700; }
+    .pack-item .pack-price { font-size: 13px; color: #888; margin-top: 4px; }
+    .pack-item .pack-bonus { font-size: 11px; color: #25f4ee; margin-top: 3px; }
+
+    .custom-amount-wrap {
+      margin: 16px 20px 0;
+      background: #1e1e1e;
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid #2a2a2a; transition: border-color 0.2s;
+    }
+    .custom-amount-wrap:focus-within { border-color: #fe2c55; }
+    .custom-amount-wrap .sym { font-size: 22px; font-weight: 700; color: #aaa; }
+    .custom-amount-wrap input { background: none; border: none; outline: none; color: #fff; font-size: 26px; font-weight: 700; width: 100%; }
+    .custom-amount-wrap input::placeholder { color: #333; }
+    .custom-label { padding: 16px 20px 8px; font-size: 13px; color: #888; }
+    .payment-label { font-size: 15px; font-weight: 600; color: #eee; margin-bottom: 12px; }
+    .payment-list { display: flex; flex-direction: column; gap: 10px; }
+    .payment-item {
+      background: #1e1e1e; border-radius: 14px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 14px; cursor: pointer;
+      border: 1.5px solid #2a2a2a; transition: border-color 0.2s;
+    }
+    .payment-item.selected { border-color: #25f4ee; background: rgba(37,244,238,0.05); }
+    .payment-item .p-icon { font-size: 24px; width: 36px; text-align: center; }
+    .payment-item .p-info { flex: 1; }
+    .payment-item .p-info h4 { font-size: 14px; font-weight: 500; }
+    .payment-item .p-info p { font-size: 12px; color: #666; margin-top: 2px; }
+    .payment-item .p-check { font-size: 18px; color: #25f4ee; opacity: 0; transition: opacity 0.2s; }
+    .payment-item.selected .p-check { opacity: 1; }
+
+    .buy-wrap { padding: 24px 20px 40px; }
+    .buy-btn {
+      width: 100%; background: #fe2c55; color: #fff; border: none;
+      border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+    }
+    .buy-btn:active { opacity: 0.85; transform: scale(0.98); }
+    .buy-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal { background: #1a1a1a; border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 420px; transform: translateY(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1); text-align: center; }
+    .modal-overlay.show .modal { transform: translateY(0); }
+    .modal .icon { font-size: 52px; margin-bottom: 14px; }
+    .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .modal p { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .modal .modal-coins { font-size: 32px; font-weight: 700; color: #ffc800; margin-bottom: 6px; }
+    .modal-btn { width: 100%; background: #fe2c55; color: #fff; border: none; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+    .modal-btn.outline { background: none; border: 1.5px solid #2a2a2a; color: #aaa; }
+
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 200; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="theme.js"></script>
+</head>
+<body>
+
+  <div class="header">
+    <div class="back" onclick="window.location.href='tiktok-balance.html'">&#8592;</div>
+    <h1>Recharge Coins</h1>
+    <div class="placeholder"></div>
+  </div>
+
+  <div class="coin-balance">
+    <div class="big-icon">💵</div>
+    <div>
+      <h2 id="current-balance">$10.00</h2>
+      <p>Your current balance</p>
+    </div>
+  </div>
+
+  <div class="section-label">Select Amount</div>
+  <div class="pack-grid">
+    <div class="pack-item" onclick="selectPack(this, 5)">
+      <div class="pack-icon">💵</div>
+      <div class="pack-coins">$5.00</div>
+      <div class="pack-price">Add to balance</div>
+    </div>
+    <div class="pack-item popular" onclick="selectPack(this, 10)">
+      <div class="pack-icon">💵</div>
+      <div class="pack-coins">$10.00</div>
+      <div class="pack-price">Add to balance</div>
+      <div class="pack-bonus">+$0.50 bonus</div>
+    </div>
+    <div class="pack-item" onclick="selectPack(this, 25)">
+      <div class="pack-icon">💵</div>
+      <div class="pack-coins">$25.00</div>
+      <div class="pack-price">Add to balance</div>
+      <div class="pack-bonus">+$1.50 bonus</div>
+    </div>
+    <div class="pack-item" onclick="selectPack(this, 50)">
+      <div class="pack-icon">💵</div>
+      <div class="pack-coins">$50.00</div>
+      <div class="pack-price">Add to balance</div>
+      <div class="pack-bonus">+$4.00 bonus</div>
+    </div>
+    <div class="pack-item" onclick="selectPack(this, 100)">
+      <div class="pack-icon">💵</div>
+      <div class="pack-coins">$100.00</div>
+      <div class="pack-price">Add to balance</div>
+      <div class="pack-bonus">+$10.00 bonus</div>
+    </div>
+    <div class="pack-item" onclick="selectPack(this, 200)">
+      <div class="pack-icon">💵</div>
+      <div class="pack-coins">$200.00</div>
+      <div class="pack-price">Add to balance</div>
+      <div class="pack-bonus">+$25.00 bonus</div>
+    </div>
+  </div>
+
+  <div class="custom-label">Or enter custom amount</div>
+  <div class="custom-amount-wrap">
+    <div class="sym">$</div>
+    <input type="number" id="custom-input" placeholder="Enter any amount" min="1" step="0.01" oninput="onCustomInput(this.value)" />
+  </div>
+
+  <div class="payment-section">
+    <div class="payment-label">Payment Method</div>
+    <div class="payment-list">
+      <div class="payment-item selected" onclick="selectPayment(this)">
+        <div class="p-icon">💳</div>
+        <div class="p-info"><h4>Credit / Debit Card</h4><p>Visa, Mastercard, Amex</p></div>
+        <div class="p-check">✓</div>
+      </div>
+      <div class="payment-item" onclick="selectPayment(this)">
+        <div class="p-icon">🅿️</div>
+        <div class="p-info"><h4>PayPal</h4><p>Fast & secure</p></div>
+        <div class="p-check">✓</div>
+      </div>
+      <div class="payment-item" onclick="selectPayment(this)">
+        <div class="p-icon">🍎</div>
+        <div class="p-info"><h4>Apple Pay</h4><p>Touch ID / Face ID</p></div>
+        <div class="p-check">✓</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="buy-wrap">
+    <button class="buy-btn" id="buy-btn" disabled onclick="openConfirm()">Select a Pack</button>
+  </div>
+
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal">
+      <div class="icon">💵</div>
+      <h2>Confirm Recharge</h2>
+      <div class="modal-coins" id="modal-coins">$0.00</div>
+      <p id="modal-price-text">Will be added to your balance</p>
+      <button class="modal-btn" onclick="confirmPurchase()">Confirm & Pay</button>
+      <button class="modal-btn outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="success-modal">
+    <div class="modal">
+      <div class="icon">✅</div>
+      <h2>Recharge Successful!</h2>
+      <div class="modal-coins" id="success-coins">$0.00</div>
+      <p>Amount has been added to your balance.</p>
+      <button class="modal-btn" onclick="window.location.href='tiktok-balance.html'">Back to Wallet</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const BASE = 10.00;
+    let balance = parseFloat(localStorage.getItem('tt_balance') || BASE);
+    document.getElementById('current-balance').textContent = '$' + balance.toFixed(2);
+    window.addEventListener('pageshow', () => {
+      balance = parseFloat(localStorage.getItem('tt_balance') || BASE);
+      document.getElementById('current-balance').textContent = '$' + balance.toFixed(2);
+    });
+
+    let selectedAmount = 0;
+
+    function selectPack(el, amount) {
+      document.querySelectorAll('.pack-item').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedAmount = amount;
+      document.getElementById('custom-input').value = '';
+      const btn = document.getElementById('buy-btn');
+      btn.disabled = false;
+      btn.textContent = `Recharge $${amount.toFixed(2)}`;
+    }
+
+    function onCustomInput(val) {
+      document.querySelectorAll('.pack-item').forEach(p => p.classList.remove('selected'));
+      const amount = parseFloat(val) || 0;
+      selectedAmount = amount;
+      const btn = document.getElementById('buy-btn');
+      if (amount >= 1) {
+        btn.disabled = false;
+        btn.textContent = `Recharge $${amount.toFixed(2)}`;
+      } else {
+        btn.disabled = true;
+        btn.textContent = 'Select a Pack';
+      }
+    }
+
+    function selectPayment(el) {
+      document.querySelectorAll('.payment-item').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function openConfirm() {
+      document.getElementById('modal-coins').textContent = '$' + selectedAmount.toFixed(2);
+      document.getElementById('modal-price-text').textContent = 'Will be added to your balance';
+      document.getElementById('confirm-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('confirm-modal').classList.remove('show');
+    }
+
+    function confirmPurchase() {
+      closeModal();
+      balance = parseFloat((balance + selectedAmount).toFixed(2));
+      localStorage.setItem('tt_balance', balance);
+      document.getElementById('current-balance').textContent = '$' + balance.toFixed(2);
+      document.getElementById('success-coins').textContent = '+$' + selectedAmount.toFixed(2) + ' → $' + balance.toFixed(2);
+      // Save transaction
+      const txs = JSON.parse(localStorage.getItem('tt_transactions') || '[]');
+      txs.unshift({ icon: '⚡', type: 'top', title: 'Recharge', sub: 'Added $' + selectedAmount.toFixed(2) + ' to balance', amount: '+$' + selectedAmount.toFixed(2), val: 'plus', status: 'Completed · ' + new Date().toLocaleString() });
+      localStorage.setItem('tt_transactions', JSON.stringify(txs));
+      setTimeout(() => document.getElementById('success-modal').classList.add('show'), 300);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+  </script>
+  <script src="auth.js"></script>
+</body>
+</html>

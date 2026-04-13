@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TikTok Balance</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #121212;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      background: #121212;
+      z-index: 10;
+    }
+    .header .back { font-size: 22px; cursor: pointer; }
+    .header h1 { font-size: 17px; font-weight: 600; }
+    .header .more { font-size: 22px; cursor: pointer; position: relative; }
+
+    .theme-menu {
+      position: absolute;
+      top: 36px; right: 0;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      padding: 8px 0;
+      min-width: 180px;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      opacity: 0; pointer-events: none;
+      transform: translateY(-8px);
+      transition: all 0.2s;
+    }
+    .theme-menu.open { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .theme-menu-title { font-size: 11px; color: #555; padding: 6px 16px 8px; text-transform: uppercase; letter-spacing: 0.8px; }
+    .theme-opt {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px; cursor: pointer; font-size: 14px;
+      transition: background 0.15s;
+    }
+    .theme-opt:hover { background: #2a2a2a; }
+    .theme-opt.active { color: #fe2c55; }
+    .theme-opt .dot {
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid transparent;
+    }
+    .theme-opt.active .dot { border-color: #fe2c55; }
+
+    .balance-card {
+      margin: 10px 20px 0;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: 20px;
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .balance-card::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: rgba(254, 44, 85, 0.15);
+      border-radius: 50%;
+    }
+    .balance-card::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; left: -30px;
+      width: 120px; height: 120px;
+      background: rgba(37, 244, 238, 0.1);
+      border-radius: 50%;
+    }
+    .balance-label { font-size: 13px; color: #aaa; margin-bottom: 8px; }
+    .balance-amount { font-size: 42px; font-weight: 700; letter-spacing: -1px; }
+    .balance-amount span { font-size: 32px; font-weight: 600; color: #ccc; margin-right: 4px; }
+    .balance-sub { display: flex; gap: 24px; margin-top: 20px; }
+    .balance-sub-item label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; }
+    .balance-sub-item p { font-size: 15px; font-weight: 600; color: #fe2c55; }
+    .balance-sub-item p.teal { color: #25f4ee; }
+
+    .actions {
+      display: flex;
+      justify-content: space-around;
+      padding: 24px 20px 8px;
+    }
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .action-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      transition: transform 0.15s;
+    }
+    .action-icon:active { transform: scale(0.92); }
+    .action-icon.withdraw { background: rgba(254, 44, 85, 0.15); }
+    .action-icon.recharge { background: rgba(37, 244, 238, 0.12); }
+    .action-icon.send     { background: rgba(255, 200, 0, 0.12); }
+    .action-icon.history  { background: rgba(150, 100, 255, 0.15); }
+    .action-btn span { font-size: 12px; color: #aaa; }
+
+    .section-title {
+      padding: 20px 20px 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-title a { font-size: 13px; color: #fe2c55; text-decoration: none; }
+
+    .coins-banner {
+      margin: 0 20px;
+      background: linear-gradient(90deg, #1e1e2e, #2a1a2e);
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid rgba(254, 44, 85, 0.2);
+    }
+    .coins-info { display: flex; align-items: center; gap: 12px; }
+    .coin-icon { font-size: 28px; }
+    .coins-info h3 { font-size: 15px; font-weight: 600; }
+    .coins-info p { font-size: 12px; color: #888; margin-top: 2px; }
+    .coins-banner button {
+      background: #fe2c55;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .coins-banner button:active { opacity: 0.8; }
+
+    .tx-list { padding: 0 20px 100px; }
+    .tx-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #1e1e1e;
+      gap: 14px;
+    }
+    .tx-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .tx-icon.gift    { background: rgba(254, 44, 85, 0.12); }
+    .tx-icon.top     { background: rgba(37, 244, 238, 0.1); }
+    .tx-icon.cash    { background: rgba(0, 200, 100, 0.12); }
+    .tx-icon.diamond { background: rgba(150, 100, 255, 0.15); }
+    .tx-icon.refund  { background: rgba(255, 165, 0, 0.12); }
+    .tx-details { flex: 1; }
+    .tx-details h4 { font-size: 14px; font-weight: 500; }
+    .tx-details p  { font-size: 12px; color: #666; margin-top: 3px; }
+    .tx-amount { text-align: right; }
+    .tx-amount .val { font-size: 15px; font-weight: 600; }
+    .tx-amount .val.plus  { color: #25f4ee; }
+    .tx-amount .val.minus { color: #fe2c55; }
+    .tx-amount .status { font-size: 11px; color: #555; margin-top: 3px; }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 420px;
+      background: #1a1a1a;
+      border-top: 1px solid #2a2a2a;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 20px;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      font-size: 22px;
+    }
+    .nav-item span { font-size: 10px; color: #666; }
+    .nav-item.active span { color: #fe2c55; }
+
+    .toast {
+      position: fixed;
+      bottom: 90px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="theme.js"></script>
+</head>
+<body>
+
+  <div class="header">
+    <div class="back" onclick="history.back()">&#8592;</div>
+    <h1>My Wallet</h1>
+    <div class="more" id="more-btn" onclick="toggleMenu(event)">&#8942;
+      <div class="theme-menu" id="theme-menu">
+        <div class="theme-menu-title">Theme</div>
+        <div class="theme-opt active" id="opt-dark" onclick="setTheme('dark', event)">
+          <div class="dot" style="background:#121212"></div> Dark
+        </div>
+        <div class="theme-opt" id="opt-light" onclick="setTheme('light', event)">
+          <div class="dot" style="background:#f5f5f5;border-color:#ddd"></div> Light
+        </div>
+        <div class="theme-opt" id="opt-pink" onclick="setTheme('pink', event)">
+          <div class="dot" style="background:linear-gradient(135deg,#fe2c55,#ff6b9d)"></div> Pink
+        </div>
+        <div class="theme-opt" id="opt-blue" onclick="setTheme('blue', event)">
+          <div class="dot" style="background:linear-gradient(135deg,#25f4ee,#0066ff)"></div> Ocean
+        </div>
+        <div class="theme-opt" id="opt-purple" onclick="setTheme('purple', event)">
+          <div class="dot" style="background:linear-gradient(135deg,#9664ff,#ff6b35)"></div> Purple
+        </div>
+        <div style="border-top:1px solid #2a2a2a;margin:6px 0"></div>
+        <div class="theme-opt" onclick="logout()" style="color:#fe2c55">
+          <div class="dot" style="background:#fe2c55"></div> Logout
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="balance-card">
+    <div class="balance-label">Total Balance</div>
+    <div class="balance-amount"><span>$</span><span id="main-balance">10.00</span></div>
+    <div class="balance-sub">
+      <div class="balance-sub-item">
+        <label>🪙 TikTok Coins</label>
+        <p>874,535</p>
+      </div>
+      <div class="balance-sub-item">
+        <label>💎 Diamonds</label>
+        <p class="teal">850,000</p>
+      </div>
+      <div class="balance-sub-item">
+        <label>💵 Withdrawable</label>
+        <p>$637,085</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <div class="action-btn" onclick="window.location.href='Withdraw.html'">
+      <div class="action-icon withdraw">💸</div>
+      <span>Withdraw</span>
+    </div>
+    <div class="action-btn" onclick="window.location.href='Recharge.html'">
+      <div class="action-icon recharge">⚡</div>
+      <span>Recharge</span>
+    </div>
+    <div class="action-btn" onclick="window.location.href='Reward.html'">
+      <div class="action-icon send">🏆</div>
+      <span>Reward</span>
+    </div>
+    <div class="action-btn" onclick="window.location.href='History.html'">
+      <div class="action-icon history">📋</div>
+      <span>History</span>
+    </div>
+  </div>
+
+  <div class="section-title">TikTok Coins</div>
+  <div class="coins-banner">
+    <div class="coins-info">
+      <div class="coin-icon">🪙</div>
+      <div>
+        <h3>3,200 Coins</h3>
+        <p>Send gifts to your favorite creators</p>
+      </div>
+    </div>
+    <button onclick="showToast('Redirecting to recharge...')">Top Up</button>
+  </div>
+
+  <div class="section-title">
+    Recent Transactions
+    <a href="#" onclick="showToast('Loading all transactions...')">See all</a>
+  </div>
+
+  <div class="tx-list" id="tx-list"></div>
+
+
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    function refreshBalance() {
+      const saved = localStorage.getItem('tt_balance');
+      const val = saved ? parseFloat(saved) : 10.00;
+      document.getElementById('main-balance').textContent = val.toFixed(2);
+    }
+    refreshBalance();
+    window.addEventListener('pageshow', () => {
+      refreshBalance();
+      renderTransactions();
+    });
+
+    const staticTx = [
+      { icon: '🎁', type: 'gift',    title: 'Gift Received',      sub: 'From @user_alex · Rose',        amount: '+320 coins',  val: 'plus',  status: 'Completed · Today 2:14 PM' },
+      { icon: '💸', type: 'cash',    title: 'Withdrawal',         sub: 'To PayPal · ****4521',           amount: '-$50.00',     val: 'minus', status: 'Completed · Today 10:00 AM' },
+      { icon: '⚡', type: 'top',     title: 'Coin Recharge',      sub: '1000 Coins Pack',                amount: '-$13.99',     val: 'minus', status: 'Completed · Yesterday' },
+      { icon: '💎', type: 'diamond', title: 'Diamonds Earned',    sub: 'Live stream reward',             amount: '+540 💎',     val: 'plus',  status: 'Completed · Yesterday' },
+      { icon: '🎁', type: 'gift',    title: 'Gift Received',      sub: 'From @creator_99 · Universe',   amount: '+1500 coins', val: 'plus',  status: 'Completed · 2 days ago' },
+      { icon: '🔄', type: 'refund',  title: 'Refund',             sub: 'Cancelled recharge',             amount: '+$6.99',      val: 'plus',  status: 'Refunded · 3 days ago' },
+      { icon: '💸', type: 'cash',    title: 'Withdrawal',         sub: 'To Bank · ****8832',             amount: '-$70.00',     val: 'minus', status: 'Completed · 4 days ago' },
+      { icon: '💎', type: 'diamond', title: 'Diamonds Converted', sub: 'Diamonds → Balance',             amount: '+$18.50',     val: 'plus',  status: 'Completed · 5 days ago' },
+    ];
+
+    function renderTransactions() {
+      const liveTx = JSON.parse(localStorage.getItem('tt_transactions') || '[]');
+      const all = [...liveTx, ...staticTx];
+      const list = document.getElementById('tx-list');
+      list.innerHTML = all.map(tx => `
+        <div class="tx-item">
+          <div class="tx-icon ${tx.type}">${tx.icon}</div>
+          <div class="tx-details">
+            <h4>${tx.title}</h4>
+            <p>${tx.sub}</p>
+          </div>
+          <div class="tx-amount">
+            <div class="val ${tx.val}">${tx.amount}</div>
+            <div class="status">${tx.status}</div>
+          </div>
+        </div>`).join('');
+    }
+    renderTransactions();
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    // Theme menu
+    function toggleMenu(e) {
+      e.stopPropagation();
+      document.getElementById('theme-menu').classList.toggle('open');
+    }
+    document.addEventListener('click', () => document.getElementById('theme-menu').classList.remove('open'));
+
+    function setTheme(name, e) {
+      if (e) e.stopPropagation();
+      applyTheme(name);
+      localStorage.setItem('tt_theme', name);
+      document.querySelectorAll('.theme-opt').forEach(el => el.classList.remove('active'));
+      document.getElementById('opt-' + name).classList.add('active');
+      document.getElementById('theme-menu').classList.remove('open');
+      showToast(name.charAt(0).toUpperCase() + name.slice(1) + ' theme applied');
+    }
+
+    // Apply saved theme on load
+    const savedTheme = localStorage.getItem('tt_theme');
+    if (savedTheme) { applyTheme(savedTheme); document.getElementById('opt-' + savedTheme) && document.getElementById('opt-' + savedTheme).classList.add('active'); }
+  </script>
+  <script src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Send Dollar</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg,#121212); color: var(--text,#fff); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 420px; margin: 0 auto; min-height: 100vh; }
+
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; position: sticky; top: 0; background: var(--bg,#121212); z-index: 10; }
+    .header .back { font-size: 22px; cursor: pointer; }
+    .header h1 { font-size: 17px; font-weight: 600; }
+    .header .placeholder { width: 22px; }
+
+    .balance-pill {
+      margin: 10px 20px 20px;
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .balance-pill span { font-size: 13px; color: #888; }
+    .balance-pill strong { font-size: 15px; color: #ffc800; }
+
+    .section { padding: 0 20px 20px; }
+    .section-label { font-size: 13px; color: #888; margin-bottom: 10px; }
+
+    .search-wrap {
+      background: #1e1e1e; border-radius: 14px; padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid #2a2a2a; transition: border-color 0.2s;
+    }
+    .search-wrap:focus-within { border-color: #fe2c55; }
+    .search-wrap input { background: none; border: none; outline: none; color: #fff; font-size: 15px; width: 100%; }
+    .search-wrap input::placeholder { color: #444; }
+    .search-wrap .s-icon { font-size: 18px; color: #555; }
+
+    .search-results {
+      padding: 0 20px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .search-result-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 0; border-bottom: 1px solid #1e1e1e; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .search-result-item:active { opacity: 0.7; }
+    .tt-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      object-fit: cover; flex-shrink: 0;
+      background: #2a2a2a;
+    }
+    .tt-avatar-placeholder {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: linear-gradient(135deg, #fe2c55, #ff6b35);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; flex-shrink: 0; color: #fff;
+    }
+    .tt-info { flex: 1; min-width: 0; }
+    .tt-info h4 { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tt-info h4 .verified { color: #25f4ee; font-size: 13px; }
+    .tt-info p { font-size: 12px; color: #666; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tt-followers { font-size: 11px; color: #888; margin-top: 2px; }
+    .tt-arrow { color: #444; font-size: 16px; flex-shrink: 0; }
+
+    .search-state {
+      padding: 30px 20px; text-align: center; color: #555; font-size: 13px;
+    }
+    .search-state .st-icon { font-size: 36px; margin-bottom: 10px; }
+
+    .spinner {
+      width: 22px; height: 22px; border: 2px solid #333;
+      border-top-color: #fe2c55; border-radius: 50%;
+      animation: spin 0.7s linear infinite; margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .recent-label { font-size: 13px; color: #888; padding: 0 20px 10px; }
+    .user-list { padding: 0 20px; display: flex; flex-direction: column; gap: 4px; }
+    .user-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 0; border-bottom: 1px solid #1e1e1e; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .user-item:active { opacity: 0.7; }
+    .user-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; flex-shrink: 0;
+    }
+    .user-info { flex: 1; }
+    .user-info h4 { font-size: 14px; font-weight: 500; }
+    .user-info p { font-size: 12px; color: #666; margin-top: 2px; }
+    .user-arrow { color: #444; font-size: 16px; }
+
+    .amount-section { padding: 20px 20px 0; }
+    .selected-user-card {
+      background: #1e1e1e; border-radius: 14px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+      border: 1.5px solid #fe2c55;
+    }
+    .selected-user-card .s-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
+    .selected-user-card .s-info h4 { font-size: 14px; }
+    .selected-user-card .s-info p { font-size: 12px; color: #888; }
+    .selected-user-card .remove { margin-left: auto; font-size: 18px; color: #555; cursor: pointer; }
+
+    .amount-input-wrap {
+      background: #1e1e1e; border-radius: 14px; padding: 16px 18px;
+      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid #2a2a2a; transition: border-color 0.2s;
+    }
+    .amount-input-wrap:focus-within { border-color: #fe2c55; }
+    .amount-input-wrap .coin-sym { font-size: 22px; }
+    .amount-input-wrap input { background: none; border: none; outline: none; color: #fff; font-size: 28px; font-weight: 700; width: 100%; }
+    .amount-input-wrap input::placeholder { color: #333; }
+
+    .quick-amounts { display: flex; gap: 10px; margin-top: 12px; }
+    .quick-amounts button {
+      flex: 1; background: #1e1e1e; border: 1.5px solid #2a2a2a; color: #ccc;
+      border-radius: 10px; padding: 8px 0; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    .quick-amounts button.active, .quick-amounts button:hover { border-color: #fe2c55; color: #fe2c55; background: rgba(254,44,85,0.08); }
+
+    .note-wrap { padding: 14px 20px 0; }
+    .note-input {
+      width: 100%; background: #1e1e1e; border: 1.5px solid #2a2a2a; border-radius: 14px;
+      padding: 14px 16px; color: #fff; font-size: 14px; resize: none; outline: none;
+      font-family: inherit; transition: border-color 0.2s;
+    }
+    .note-input:focus { border-color: #fe2c55; }
+    .note-input::placeholder { color: #444; }
+
+    .send-wrap { padding: 24px 20px 40px; }
+    .send-btn {
+      width: 100%; background: #fe2c55; color: #fff; border: none;
+      border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+    }
+    .send-btn:active { opacity: 0.85; transform: scale(0.98); }
+    .send-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal { background: #1a1a1a; border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 420px; transform: translateY(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1); text-align: center; }
+    .modal-overlay.show .modal { transform: translateY(0); }
+    .modal .icon { font-size: 52px; margin-bottom: 14px; }
+    .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .modal p { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .modal .modal-coins { font-size: 32px; font-weight: 700; color: #ffc800; margin-bottom: 6px; }
+    .modal-btn { width: 100%; background: #fe2c55; color: #fff; border: none; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+    .modal-btn.outline { background: none; border: 1.5px solid #2a2a2a; color: #aaa; }
+
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 200; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .hidden { display: none; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="theme.js"></script>
+</head>
+<body>
+
+  <div class="header">
+    <div class="back" onclick="window.location.href='tiktok-balance.html'">&#8592;</div>
+    <h1>Send Dollar</h1>
+    <div class="placeholder"></div>
+  </div>
+
+  <div class="balance-pill">
+    <span>💵 Your Balance</span>
+    <strong id="balance-display">$248.50</strong>
+  </div>
+
+  <!-- Step 1: Pick user -->
+  <div id="step-pick">
+    <div class="section">
+      <div class="section-label">Search by username</div>
+      <div class="search-wrap">
+        <span class="s-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="@username or name" oninput="onSearchInput(this.value)" />
+      </div>
+    </div>
+
+    <div id="search-state-box" class="search-state">
+      <div class="st-icon">🔍</div>
+      <div>Type a TikTok username to search</div>
+    </div>
+    <div id="search-results-box" class="search-results hidden"></div>
+
+    <div id="recent-section">
+      <div class="recent-label">Recent</div>
+      <div class="user-list" id="user-list"></div>
+    </div>
+  </div>
+
+  <!-- Step 2: Enter amount -->
+  <div id="step-amount" class="hidden">
+    <div class="amount-section">
+      <div class="selected-user-card" id="selected-card"></div>
+      <div class="section-label">Amount to Send</div>
+      <div class="amount-input-wrap">
+        <div class="coin-sym">$</div>
+        <input type="number" id="coin-input" placeholder="0.00" min="1" step="0.01" oninput="onCoinChange()" />
+      </div>
+      <div class="quick-amounts">
+        <button onclick="setCoins(5)">$5</button>
+        <button onclick="setCoins(10)">$10</button>
+        <button onclick="setCoins(25)">$25</button>
+        <button onclick="setCoins(50)">$50</button>
+      </div>
+    </div>
+    <div class="note-wrap">
+      <textarea class="note-input" id="note-input" rows="2" placeholder="Add a message (optional)"></textarea>
+    </div>
+    <div class="send-wrap">
+      <button class="send-btn" id="send-btn" disabled onclick="openConfirm()">Send</button>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal">
+      <div class="icon">💸</div>
+      <h2>Confirm Send</h2>
+      <div class="modal-coins" id="modal-coins">$0.00</div>
+      <p id="modal-to">To @username</p>
+      <button class="modal-btn" onclick="confirmSend()">Confirm</button>
+      <button class="modal-btn outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" id="success-modal">
+    <div class="modal">
+      <div class="icon">✅</div>
+      <h2>Dollar Sent!</h2>
+      <div class="modal-coins" id="success-coins">$0.00</div>
+      <p id="success-to">Successfully sent to @username</p>
+      <button class="modal-btn" onclick="window.location.href='tiktok-balance.html'">Back to Wallet</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const recentUsers = [
+      { name: 'Alex Johnson',   handle: '@alex_j',      avatar: '👦', color: '#fe2c55', sent: '2 days ago' },
+      { name: 'Sarah Kim',      handle: '@sarahkim',    avatar: '👧', color: '#25f4ee', sent: '5 days ago' },
+      { name: 'Creator 99',     handle: '@creator_99',  avatar: '🎤', color: '#ffc800', sent: '1 week ago' },
+      { name: 'Mike Dance',     handle: '@mikedance',   avatar: '🕺', color: '#9664ff', sent: '2 weeks ago' },
+      { name: 'Luna Stars',     handle: '@lunastars',   avatar: '🌙', color: '#ff6b35', sent: '3 weeks ago' },
+    ];
+
+    let selectedUser = null;
+    let searchTimer = null;
+
+    // Render recent users
+    function renderRecent(list) {
+      const el = document.getElementById('user-list');
+      el.innerHTML = list.map(u => `
+        <div class="user-item" onclick="pickUserSimple('${u.handle}', '${u.name}', '${u.avatar}', '${u.color}')">
+          <div class="user-avatar" style="background:${u.color}22;color:${u.color}">${u.avatar}</div>
+          <div class="user-info">
+            <h4>${u.name}</h4>
+            <p>${u.handle} · Sent ${u.sent}</p>
+          </div>
+          <div class="user-arrow">›</div>
+        </div>`).join('');
+    }
+    renderRecent(recentUsers);
+
+    function formatCount(n) {
+      if (!n) return '0';
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return n.toString();
+    }
+
+    function showState(icon, msg) {
+      const box = document.getElementById('search-state-box');
+      box.innerHTML = icon === 'spinner'
+        ? `<div class="spinner"></div><div>${msg}</div>`
+        : `<div class="st-icon">${icon}</div><div>${msg}</div>`;
+      box.classList.remove('hidden');
+      document.getElementById('search-results-box').classList.add('hidden');
+      document.getElementById('recent-section').classList.add('hidden');
+    }
+
+    function showResults(users) {
+      const box = document.getElementById('search-results-box');
+      document.getElementById('search-state-box').classList.add('hidden');
+      document.getElementById('recent-section').classList.add('hidden');
+
+      if (!users.length) {
+        document.getElementById('search-state-box').innerHTML = `<div class="st-icon">😕</div><div>No users found</div>`;
+        document.getElementById('search-state-box').classList.remove('hidden');
+        box.classList.add('hidden');
+        return;
+      }
+
+      box.innerHTML = users.map(u => {
+        const avatarHtml = u.avatarUrl
+          ? `<img class="tt-avatar" src="${u.avatarUrl}" onerror="this.outerHTML='<div class=tt-avatar-placeholder>${u.initials}</div>'" />`
+          : `<div class="tt-avatar-placeholder">${u.initials}</div>`;
+        const verified = u.verified ? '<span class="verified">✓</span>' : '';
+        const stats = [
+          u.followers ? `${formatCount(u.followers)} followers` : '',
+          u.likes     ? `${formatCount(u.likes)} likes` : '',
+          u.videos    ? `${formatCount(u.videos)} videos` : '',
+        ].filter(Boolean).join(' · ');
+        return `
+          <div class="search-result-item" onclick="pickUserTT('${u.uniqueId}', '${(u.nickname||u.uniqueId).replace(/'/g,"&#39;")}', '${u.avatarUrl||''}', ${!!u.verified}, ${u.followers||0})">
+            ${avatarHtml}
+            <div class="tt-info">
+              <h4>${u.nickname || u.uniqueId} ${verified}</h4>
+              <p>@${u.uniqueId}</p>
+              <div class="tt-followers">${stats}</div>
+              ${u.bio ? `<div class="tt-followers" style="color:#555;margin-top:2px">${u.bio.substring(0,50)}${u.bio.length>50?'...':''}</div>` : ''}
+            </div>
+            <div class="tt-arrow">›</div>
+          </div>`;
+      }).join('');
+      box.classList.remove('hidden');
+    }
+
+    async function searchTikTok(query) {
+      if (!query.trim()) {
+        document.getElementById('search-state-box').innerHTML = `<div class="st-icon">🔍</div><div>Type a TikTok username to search</div>`;
+        document.getElementById('search-state-box').classList.remove('hidden');
+        document.getElementById('search-results-box').classList.add('hidden');
+        document.getElementById('recent-section').classList.remove('hidden');
+        return;
+      }
+      showState('spinner', 'Searching TikTok...');
+      try {
+        const clean = query.replace(/^@/, '');
+        const res = await fetch(`http://localhost:5000/tiktok/search?q=${encodeURIComponent(clean)}`);
+        if (!res.ok) throw new Error('server error');
+        const data = await res.json();
+        if (data.users && data.users.length) {
+          showResults(data.users.map(u => ({ ...u, initials: (u.nickname || u.uniqueId || '?')[0].toUpperCase() })));
+        } else {
+          showState('😕', `No TikTok user found for "${clean}"`);
+        }
+      } catch (e) {
+        showState('⚠️', 'Cannot reach proxy server.<br/>Run <b style="color:#25f4ee">python3 server.py</b> in /Users/Shared then refresh.');
+      }
+    }
+
+    function onSearchInput(val) {
+      clearTimeout(searchTimer);
+      if (!val.trim()) {
+        document.getElementById('search-state-box').innerHTML = `<div class="st-icon">🔍</div><div>Type a TikTok username to search</div>`;
+        document.getElementById('search-state-box').classList.remove('hidden');
+        document.getElementById('search-results-box').classList.add('hidden');
+        document.getElementById('recent-section').classList.remove('hidden');
+        return;
+      }
+      showState('spinner', 'Searching TikTok...');
+      searchTimer = setTimeout(() => searchTikTok(val), 600);
+    }
+
+    function pickUserTT(uniqueId, nickname, avatarUrl, verified, followers) {
+      selectedUser = { handle: '@' + uniqueId, name: nickname, avatarUrl, verified, followers };
+      document.getElementById('step-pick').classList.add('hidden');
+      document.getElementById('step-amount').classList.remove('hidden');
+      const avatarHtml = avatarUrl
+        ? `<img class="tt-avatar" src="${avatarUrl}" style="width:40px;height:40px" onerror="this.style.display='none'" />`
+        : `<div class="s-avatar" style="background:#fe2c5522;color:#fe2c55">${nickname[0].toUpperCase()}</div>`;
+      const verBadge = verified ? ' <span style="color:#25f4ee;font-size:12px">✓</span>' : '';
+      document.getElementById('selected-card').innerHTML = `
+        ${avatarHtml}
+        <div class="s-info">
+          <h4>${nickname}${verBadge}</h4>
+          <p>@${uniqueId} · ${formatCount(followers)} followers</p>
+        </div>
+        <div class="remove" onclick="goBack()">✕</div>`;
+    }
+
+    function pickUserSimple(handle, name, avatar, color) {
+      selectedUser = { handle, name, avatarUrl: null };
+      document.getElementById('step-pick').classList.add('hidden');
+      document.getElementById('step-amount').classList.remove('hidden');
+      document.getElementById('selected-card').innerHTML = `
+        <div class="s-avatar" style="background:${color}22;color:${color}">${avatar}</div>
+        <div class="s-info"><h4>${name}</h4><p>${handle}</p></div>
+        <div class="remove" onclick="goBack()">✕</div>`;
+    }
+
+    // Load balance from localStorage
+    const BASE_BAL = 10.00;
+    let balance = parseFloat(localStorage.getItem('tt_balance') || BASE_BAL);
+    document.getElementById('balance-display').textContent = '$' + balance.toFixed(2);
+
+    function goBack() {
+      document.getElementById('step-amount').classList.add('hidden');
+      document.getElementById('step-pick').classList.remove('hidden');
+      document.getElementById('coin-input').value = '';
+      document.getElementById('send-btn').disabled = true;
+      document.getElementById('send-btn').textContent = 'Send';
+    }
+
+    function setCoins(val) {
+      document.getElementById('coin-input').value = val;
+      document.querySelectorAll('.quick-amounts button').forEach(b => b.classList.toggle('active', b.textContent == '$' + val));
+      onCoinChange();
+    }
+
+    function onCoinChange() {
+      const val = parseFloat(document.getElementById('coin-input').value) || 0;
+      const btn = document.getElementById('send-btn');
+      btn.disabled = val < 1 || val > balance;
+      if (!btn.disabled) btn.textContent = `Send $${val.toFixed(2)}`;
+      else btn.textContent = 'Send';
+    }
+
+    function openConfirm() {
+      const val = parseFloat(document.getElementById('coin-input').value) || 0;
+      document.getElementById('modal-coins').textContent = '$' + val.toFixed(2);
+      document.getElementById('modal-to').textContent = 'To ' + selectedUser.handle;
+      document.getElementById('confirm-modal').classList.add('show');
+    }
+
+    function closeModal() { document.getElementById('confirm-modal').classList.remove('show'); }
+
+    function confirmSend() {
+      closeModal();
+      const val = parseFloat(document.getElementById('coin-input').value) || 0;
+      const note = document.getElementById('note-input').value.trim();
+      balance = parseFloat((balance - val).toFixed(2));
+      localStorage.setItem('tt_balance', balance);
+      document.getElementById('balance-display').textContent = '$' + balance.toFixed(2);
+      document.getElementById('success-coins').textContent = '$' + val.toFixed(2);
+      document.getElementById('success-to').textContent = 'Successfully sent to ' + selectedUser.handle;
+      // Save transaction
+      const txs = JSON.parse(localStorage.getItem('tt_transactions') || '[]');
+      txs.unshift({ icon: '💸', type: 'cash', title: 'Dollar Sent', sub: 'To ' + selectedUser.handle + (note ? ' · ' + note : ''), amount: '-$' + val.toFixed(2), val: 'minus', status: 'Completed · ' + new Date().toLocaleString() });
+      localStorage.setItem('tt_transactions', JSON.stringify(txs));
+      setTimeout(() => document.getElementById('success-modal').classList.add('show'), 300);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+  </script>
+  <script src="auth.js"></script>
+</body>
+</html>

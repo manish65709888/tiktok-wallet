@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Withdraw</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg,#121212);
+      color: var(--text,#fff);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      background: var(--bg,#121212);
+      z-index: 10;
+    }
+    .header .back { font-size: 22px; cursor: pointer; }
+    .header h1 { font-size: 17px; font-weight: 600; }
+    .header .placeholder { width: 22px; }
+
+    /* Available Balance */
+    .avail-box {
+      margin: 16px 20px;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: 18px;
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .avail-box::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: rgba(254, 44, 85, 0.15);
+      border-radius: 50%;
+    }
+    .avail-box label { font-size: 13px; color: #888; }
+    .avail-box .amount { font-size: 36px; font-weight: 700; margin: 6px 0 4px; }
+    .avail-box .amount span { font-size: 18px; color: #aaa; margin-right: 2px; }
+    .avail-box .note { font-size: 12px; color: #555; }
+
+    /* Amount Input */
+    .section { padding: 20px 20px 0; }
+    .section-label { font-size: 13px; color: #888; margin-bottom: 10px; }
+
+    .amount-input-wrap {
+      background: #1e1e1e;
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1.5px solid #2a2a2a;
+      transition: border-color 0.2s;
+    }
+    .amount-input-wrap:focus-within { border-color: #fe2c55; }
+    .amount-input-wrap .currency { font-size: 22px; font-weight: 600; color: #aaa; }
+    .amount-input-wrap input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text,#fff);
+      font-size: 28px;
+      font-weight: 700;
+      width: 100%;
+    }
+    .amount-input-wrap input::placeholder { color: #333; }
+
+    .quick-amounts {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .quick-amounts button {
+      flex: 1;
+      background: #1e1e1e;
+      border: 1.5px solid #2a2a2a;
+      color: #ccc;
+      border-radius: 10px;
+      padding: 8px 0;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quick-amounts button:hover,
+    .quick-amounts button.active {
+      border-color: #fe2c55;
+      color: #fe2c55;
+      background: rgba(254, 44, 85, 0.08);
+    }
+
+    /* Method */
+    .method-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .method-item {
+      background: #1e1e1e;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      border: 1.5px solid #2a2a2a;
+      transition: border-color 0.2s;
+    }
+    .method-item.selected { border-color: #fe2c55; background: rgba(254, 44, 85, 0.06); }
+    .method-icon { font-size: 26px; width: 40px; text-align: center; }
+    .method-info { flex: 1; }
+    .method-info h4 { font-size: 14px; font-weight: 500; }
+    .method-info p { font-size: 12px; color: #666; margin-top: 2px; }
+    .method-check { font-size: 18px; color: #fe2c55; opacity: 0; transition: opacity 0.2s; }
+    .method-item.selected .method-check { opacity: 1; }
+
+    /* Fee Note */
+    .fee-note {
+      margin: 14px 20px 0;
+      background: rgba(255, 200, 0, 0.07);
+      border: 1px solid rgba(255, 200, 0, 0.15);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #aaa;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .fee-note span { color: #ffc800; font-size: 14px; }
+
+    /* Summary */
+    .summary {
+      margin: 16px 20px 0;
+      background: #1a1a1a;
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #888;
+      padding: 5px 0;
+    }
+    .summary-row.total { color: var(--text,#fff); font-weight: 600; font-size: 14px; border-top: 1px solid #2a2a2a; margin-top: 6px; padding-top: 10px; }
+    .summary-row .red { color: #fe2c55; }
+    .summary-row .green { color: #25f4ee; }
+
+    /* Submit Button */
+    .submit-wrap { padding: 24px 20px 40px; }
+    .submit-btn {
+      width: 100%;
+      background: #fe2c55;
+      color: var(--text,#fff);
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .submit-btn:active { opacity: 0.85; transform: scale(0.98); }
+    .submit-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal {
+      background: #1a1a1a;
+      border-radius: 24px 24px 0 0;
+      padding: 28px 24px 40px;
+      width: 100%;
+      max-width: 420px;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+      text-align: center;
+    }
+    .modal-overlay.show .modal { transform: translateY(0); }
+    .modal .icon { font-size: 52px; margin-bottom: 14px; }
+    .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .modal p { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .modal .modal-amount { font-size: 32px; font-weight: 700; color: #25f4ee; margin-bottom: 6px; }
+    .modal .modal-method { font-size: 13px; color: #666; margin-bottom: 24px; }
+    .modal-btn {
+      width: 100%;
+      background: #fe2c55;
+      color: var(--text,#fff);
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .modal-btn.outline {
+      background: none;
+      border: 1.5px solid #2a2a2a;
+      color: #aaa;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #333;
+      color: var(--text,#fff);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="theme.js"></script>
+</head>
+<body>
+
+  <div class="header">
+    <div class="back" onclick="window.location.href='tiktok-balance.html'">&#8592;</div>
+    <h1>Withdraw</h1>
+    <div class="placeholder"></div>
+  </div>
+
+  <!-- Available Balance -->
+  <div class="avail-box">
+    <label>Available to Withdraw</label>
+    <div class="amount"><span>$</span>120.00</div>
+    <div class="note">Diamonds are converted at a rate of 1 Diamond = $0.05</div>
+  </div>
+
+  <!-- Amount -->
+  <div class="section">
+    <div class="section-label">Enter Amount</div>
+    <div class="amount-input-wrap">
+      <div class="currency">$</div>
+      <input type="number" id="amount-input" placeholder="0.00" min="1" max="120" oninput="onAmountChange()" />
+    </div>
+    <div class="quick-amounts">
+      <button onclick="setAmount(10)">$10</button>
+      <button onclick="setAmount(25)">$25</button>
+      <button onclick="setAmount(50)">$50</button>
+      <button onclick="setAmount(120)">Max</button>
+    </div>
+  </div>
+
+  <!-- Method -->
+  <div class="section" style="margin-top:20px;">
+    <div class="section-label">Withdraw To</div>
+    <div class="method-list">
+      <div class="method-item selected" onclick="selectMethod(this, 'PayPal · ****4521')">
+        <div class="method-icon">🅿️</div>
+        <div class="method-info">
+          <h4>PayPal</h4>
+          <p>****4521 · Instant</p>
+        </div>
+        <div class="method-check">✓</div>
+      </div>
+      <div class="method-item" onclick="selectMethod(this, 'Bank · ****8832')">
+        <div class="method-icon">🏦</div>
+        <div class="method-info">
+          <h4>Bank Account</h4>
+          <p>****8832 · 1–3 business days</p>
+        </div>
+        <div class="method-check">✓</div>
+      </div>
+      <div class="method-item" onclick="selectMethod(this, 'Venmo · @username')">
+        <div class="method-icon">💙</div>
+        <div class="method-info">
+          <h4>Venmo</h4>
+          <p>@username · Instant</p>
+        </div>
+        <div class="method-check">✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fee Note -->
+  <div class="fee-note">
+    <span>⚠️</span>
+    <div>A processing fee of <strong>2%</strong> applies to all withdrawals. Minimum withdrawal is <strong>$1.00</strong>.</div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary">
+    <div class="summary-row"><span>Withdraw Amount</span><span id="sum-amount">$0.00</span></div>
+    <div class="summary-row"><span>Processing Fee (2%)</span><span class="red" id="sum-fee">-$0.00</span></div>
+    <div class="summary-row total"><span>You Receive</span><span class="green" id="sum-receive">$0.00</span></div>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-wrap">
+    <button class="submit-btn" id="submit-btn" disabled onclick="openConfirm()">Withdraw</button>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="icon">💸</div>
+      <h2>Confirm Withdrawal</h2>
+      <div class="modal-amount" id="modal-amount">$0.00</div>
+      <div class="modal-method" id="modal-method">via PayPal · ****4521</div>
+      <p>You will receive <strong id="modal-receive" style="color:#25f4ee">$0.00</strong> after fees.</p>
+      <button class="modal-btn" onclick="confirmWithdraw()">Confirm</button>
+      <button class="modal-btn outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" id="success-modal">
+    <div class="modal">
+      <div class="icon">✅</div>
+      <h2>Withdrawal Submitted!</h2>
+      <div class="modal-amount" id="success-amount">$0.00</div>
+      <p>Your withdrawal is being processed.<br/>Funds will arrive shortly.</p>
+      <button class="modal-btn" onclick="window.location.href='tiktok-balance.html'">Back to Wallet</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let selectedMethod = 'PayPal · ****4521';
+
+    function selectMethod(el, method) {
+      document.querySelectorAll('.method-item').forEach(m => m.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedMethod = method;
+    }
+
+    function setAmount(val) {
+      document.getElementById('amount-input').value = val;
+      document.querySelectorAll('.quick-amounts button').forEach(b => {
+        b.classList.toggle('active', b.textContent === (val === 120 ? 'Max' : '$' + val));
+      });
+      onAmountChange();
+    }
+
+    function onAmountChange() {
+      const raw = parseFloat(document.getElementById('amount-input').value) || 0;
+      const fee = +(raw * 0.02).toFixed(2);
+      const receive = +(raw - fee).toFixed(2);
+
+      document.getElementById('sum-amount').textContent  = '$' + raw.toFixed(2);
+      document.getElementById('sum-fee').textContent     = '-$' + fee.toFixed(2);
+      document.getElementById('sum-receive').textContent = '$' + receive.toFixed(2);
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = raw < 1 || raw > 120;
+    }
+
+    function openConfirm() {
+      const raw = parseFloat(document.getElementById('amount-input').value) || 0;
+      const fee = +(raw * 0.02).toFixed(2);
+      const receive = +(raw - fee).toFixed(2);
+
+      document.getElementById('modal-amount').textContent  = '$' + raw.toFixed(2);
+      document.getElementById('modal-method').textContent  = 'via ' + selectedMethod;
+      document.getElementById('modal-receive').textContent = '$' + receive.toFixed(2);
+      document.getElementById('modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('show');
+    }
+
+    function confirmWithdraw() {
+      closeModal();
+      const raw = parseFloat(document.getElementById('amount-input').value) || 0;
+      const fee = +(raw * 0.02).toFixed(2);
+      const receive = +(raw - fee).toFixed(2);
+      document.getElementById('success-amount').textContent = '$' + receive.toFixed(2);
+      // Save transaction
+      const txs = JSON.parse(localStorage.getItem('tt_transactions') || '[]');
+      txs.unshift({ icon: '💸', type: 'cash', title: 'Withdrawal', sub: 'To ' + selectedMethod, amount: '-$' + raw.toFixed(2), val: 'minus', status: 'Completed · ' + new Date().toLocaleString() });
+      localStorage.setItem('tt_transactions', JSON.stringify(txs));
+      setTimeout(() => document.getElementById('success-modal').classList.add('show'), 300);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+  </script>
+  <script src="auth.js"></script>
+</body>
+</html>
