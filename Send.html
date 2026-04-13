@@ -335,7 +335,7 @@
       showState('spinner', 'Searching TikTok...');
       try {
         const clean = query.replace(/^@/, '');
-        const res = await fetch(`//tiktok/search?q=${encodeURIComponent(clean)}`);
+        const res = await fetch(`/tiktok/search?q=${encodeURIComponent(clean)}`);
         if (!res.ok) throw new Error('server error');
         const data = await res.json();
         if (data.users && data.users.length) {
