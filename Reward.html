@@ -140,16 +140,74 @@
     .send-btn:active { opacity: 0.85; transform: scale(0.98); }
     .send-btn:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
 
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
     .modal-overlay.show { opacity: 1; pointer-events: all; }
-    .modal { background: #1a1a1a; border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 420px; transform: translateY(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1); text-align: center; }
+    .modal { background: #111; border-radius: 28px 28px 0 0; padding: 32px 24px 44px; width: 100%; max-width: 420px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(.4,0,.2,1); text-align: center; border-top: 1px solid #222; }
     .modal-overlay.show .modal { transform: translateY(0); }
     .modal .icon { font-size: 52px; margin-bottom: 14px; }
     .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
     .modal p { font-size: 14px; color: #888; margin-bottom: 24px; }
     .modal .modal-coins { font-size: 32px; font-weight: 700; color: #ffc800; margin-bottom: 6px; }
-    .modal-btn { width: 100%; background: #fe2c55; color: #fff; border: none; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+    .modal-btn { width: 100%; background: #fe2c55; color: #fff; border: none; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; font-family: inherit; }
     .modal-btn.outline { background: none; border: 1.5px solid #2a2a2a; color: #aaa; }
+
+    /* Success Modal */
+    .success-modal-inner { background: #111; border-radius: 28px 28px 0 0; padding: 0 0 44px; width: 100%; max-width: 420px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(.4,0,.2,1); text-align: center; border-top: 1px solid #222; overflow: hidden; }
+    .modal-overlay.show .success-modal-inner { transform: translateY(0); }
+    .success-banner {
+      background: linear-gradient(135deg, #1a0a14, #2a1020);
+      padding: 36px 24px 28px;
+      position: relative; overflow: hidden;
+    }
+    .success-banner::before {
+      content: ''; position: absolute; top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, rgba(254,44,85,0.25) 0%, transparent 70%);
+    }
+    .success-banner::after {
+      content: ''; position: absolute; bottom: -30px; left: -30px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(255,200,0,0.15) 0%, transparent 70%);
+    }
+    .success-icon-wrap {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #fe2c55, #ff6b35);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; margin: 0 auto 16px;
+      box-shadow: 0 8px 32px rgba(254,44,85,0.4);
+      position: relative; z-index: 1;
+    }
+    .success-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; position: relative; z-index: 1; }
+    .success-subtitle { font-size: 13px; color: #888; margin-top: 6px; position: relative; z-index: 1; }
+    .success-body { padding: 24px 24px 0; }
+    .success-amount-card {
+      background: #1a1a1a; border-radius: 16px; padding: 18px;
+      margin-bottom: 16px; border: 1px solid #222;
+    }
+    .success-amount-label { font-size: 11px; color: #555; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .success-amount-val { font-size: 36px; font-weight: 800; color: #ffc800; letter-spacing: -1px; }
+    .success-to-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #1a1a1a; border-radius: 12px; padding: 12px 16px;
+      margin-bottom: 20px; border: 1px solid #222;
+    }
+    .success-to-label { font-size: 12px; color: #555; font-weight: 500; }
+    .success-to-val { font-size: 13px; font-weight: 700; color: #fff; }
+    .success-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(0,200,100,0.1); border: 1px solid rgba(0,200,100,0.2);
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 12px; color: #00c853; font-weight: 600; margin-bottom: 20px;
+    }
+    .success-badge::before { content: ''; width: 6px; height: 6px; background: #00c853; border-radius: 50%; display: inline-block; }
+    .success-back-btn {
+      width: 100%; background: linear-gradient(135deg, #fe2c55, #ff6b35);
+      color: #fff; border: none; border-radius: 14px; padding: 15px;
+      font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+      box-shadow: 0 4px 20px rgba(254,44,85,0.3);
+      transition: opacity 0.2s;
+    }
+    .success-back-btn:active { opacity: 0.85; }
 
     .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 200; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -232,12 +290,24 @@
 
   <!-- Success Modal -->
   <div class="modal-overlay" id="success-modal">
-    <div class="modal">
-      <div class="icon">✅</div>
-      <h2>Reward Sent!</h2>
-      <div class="modal-coins" id="success-coins">$0.00</div>
-      <p id="success-to">Successfully sent to @username</p>
-      <button class="modal-btn" onclick="window.location.href='tiktok-balance.html'">Back to Wallet</button>
+    <div class="success-modal-inner">
+      <div class="success-banner">
+        <div class="success-icon-wrap">🏆</div>
+        <div class="success-title">Reward Sent!</div>
+        <div class="success-subtitle">Your reward has been delivered successfully</div>
+      </div>
+      <div class="success-body">
+        <div class="success-amount-card">
+          <div class="success-amount-label">Amount Sent</div>
+          <div class="success-amount-val" id="success-coins">$0.00</div>
+        </div>
+        <div class="success-to-row">
+          <span class="success-to-label">Recipient</span>
+          <span class="success-to-val" id="success-to">@username</span>
+        </div>
+        <div class="success-badge">Transaction Completed</div>
+        <button class="success-back-btn" onclick="window.location.href='tiktok-balance.html'">Back to Wallet</button>
+      </div>
     </div>
   </div>
 
